@@ -11,7 +11,7 @@ block content
 		.box
 			.container
 				h1.title= val.doc.title
-				h2.subtitle= val.doc.meta.title
+				h2.subtitle= 'From ' + val.doc.meta.title
 				a(href=val.doc.origlink) View Story
 				input.is-primary.is-bold.button.spoilerbutton(type='button', value='Show Summary', onclick="this.value=this.value=='Show Summary'?'Hide Summary':'Show Summary';")
 				.spoiler
