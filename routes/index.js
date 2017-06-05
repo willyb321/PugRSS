@@ -16,15 +16,15 @@ PouchDB.plugin(require('pouchdb-upsert'));
 function render() {
 	return new Promise((resolve, reject) => {
 		let urls;
-		let feeds = new PouchDB('RSS_Feeds');
-		feeds.allDocs({include_docs: true}).then((docs) => {
+		const feeds = new PouchDB('RSS_Feeds');
+		feeds.allDocs({include_docs: true}).then(docs => {
 			urls = docs;
 			if (urls) {
-				for (let i in urls.rows) {
+				for (const i in urls.rows) {
 					console.log('we got them');
-					let feedreq = request(urls.rows[i].doc.url);
-					let feedparser = new FeedParser();
-					feedparser.on('meta', function (meta) {
+					const feedreq = request(urls.rows[i].doc.url);
+					const feedparser = new FeedParser();
+					feedparser.on('meta', meta => {
 						console.log('===== %s =====', meta.title);
 					});
 					feedreq.on('error', error => {
@@ -32,7 +32,7 @@ function render() {
 					});
 
 					feedreq.on('response', function (res) {
-						let stream = this; // `this` is `req`, which is a stream
+						const stream = this; // `this` is `req`, which is a stream
 						// console.log(stream)
 						if (res.statusCode !== 200) {
 							this.emit('error', new Error('Bad status code'));
@@ -43,29 +43,29 @@ function render() {
 					});
 
 					feedparser.on('error', error => {
-						console.error(error)
+						console.error(error);
 					});
 
 					feedparser.on('readable', function () {
 						// This is where the action is!
-						let stream = this; // `this` is `feedparser`, which is a stream
-						let meta = stream.meta; // **NOTE** the "meta" is always available in the context of the feedparser instance
+						const stream = this; // `this` is `feedparser`, which is a stream
+						const meta = stream.meta; // **NOTE** the "meta" is always available in the context of the feedparser instance
 						let item;
 
 						while (item = stream.read()) {
-							new PouchDB('RSS_Content').putIfNotExists(item.title, item).then((response) => {
+							new PouchDB('RSS_Content').putIfNotExists(item.title, item).then(response => {
 							}).catch(err => {
 								if (err) {
 									console.log(err);
 								}
-							})
+							});
 						}
 					});
 				}
-				resolve('hi')
+				resolve('hi');
 			}
 		});
-	})
+	});
 }
 /* GET home page. */
 router.get('/', async (req, res, next) => {
