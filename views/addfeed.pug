@@ -1,0 +1,13 @@
+extends layout
+
+block content
+	section.hero.is-primary.is-bold
+			.hero-body
+				.container
+					h1.title= title
+					h2.subtitle Welcome to #{title}
+					a(href="/") Go back
+	.container
+		form.form(action="/add" method="post" onsubmit="console.log(event)")
+			input.input(type="text" name="url" placeholder='RSS URL')
+			button.button.is-primary(type='submit') Submit

@@ -1,0 +1,22 @@
+extends layout
+
+block content
+	section.hero.is-primary.is-bold
+		.hero-body
+			.container
+				h1.title= title
+				h2.subtitle Welcome to #{title}
+				a(href="/addfeed") Add Feed
+	each val,ind in docs
+		.box
+			.container
+				h1.title= val.doc.title
+				h2.subtitle= val.doc.meta.title
+				a(href=val.doc.origlink) View Story
+				input.is-primary.is-bold.button.spoilerbutton(type='button', value='Show', onclick="this.value=this.value=='Show'?'Hide':'Show';")
+				.spoiler
+					if val.doc.image.url
+						img(src=val.doc.image.url)
+						div= val.doc.description.replace(/<[^>]+>/g, '')
+					else
+						div= val.doc.description.replace(/<[^>]+>/g, '')
