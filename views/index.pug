@@ -13,7 +13,7 @@ block content
 				h1.title= val.doc.title
 				h2.subtitle= val.doc.meta.title
 				a(href=val.doc.origlink) View Story
-				input.is-primary.is-bold.button.spoilerbutton(type='button', value='Show', onclick="this.value=this.value=='Show'?'Hide':'Show';")
+				input.is-primary.is-bold.button.spoilerbutton(type='button', value='Show Summary', onclick="this.value=this.value=='Show Summary'?'Hide Summary':'Show Summary';")
 				.spoiler
 					if val.doc.image.url
 						img(src=val.doc.image.url)
