@@ -1,5 +1,5 @@
 @import bulma/bulma
-
+@import font-awesome-4.7.0/css/font-awesome.css
 .spoilerbutton
 	display: block
 	margin: 5px 0
@@ -17,5 +17,15 @@
 .spoilerbutton
 	&[value="Show Summary"] + .spoiler > div
 		margin-top: -100%
+		display: none
 	&[value="Hide Summary"] + .spoiler
 		padding: 5px
+.scroll-to-top
+	position: fixed
+	bottom: 30px
+	right: 50px
+	width: 80px
+	height: 25px
+	text-align: center
+	&:hover
+		text-decoration: none

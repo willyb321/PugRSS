@@ -3,6 +3,7 @@ const router = express.Router();
 const PouchDB = require('pouchdb');
 const request = require('request');
 const FeedParser = require('feedparser');
+const _ = require('underscore');
 
 process.on('uncaughtException', err => {
 	console.log(err);
@@ -72,7 +73,7 @@ router.get('/', async (req, res, next) => {
 	const db = new PouchDB('RSS_Content');
 	await render();
 	db.allDocs({include_docs: true}).then(result => {
-		res.render('index', {title: 'PugRSS', docs: result.rows});
+		res.render('index', {title: 'PugRSS', docs:  _.sortBy(result.rows, function(o) { return new Date(o.doc.pubdate); })});
 		db.close();
 	});
 });
