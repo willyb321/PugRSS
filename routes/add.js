@@ -23,7 +23,7 @@ router.post('/', ensureLoggedIn, (req, res, next) => {
 
 		if (res.statusCode !== 200) {
 			this.emit('error', new Error('Bad status code'));
-		}		else {
+		} else {
 			db.putIfNotExists(url, {url}).then((err, response) => {
 				if (err) {
 					console.log(err);
@@ -44,7 +44,14 @@ router.post('/', ensureLoggedIn, (req, res, next) => {
 		let item;
 
 		while (item = stream.read()) {
-			new PouchDB('RSS_Content', {db: redisdown, url: process.env.REDIS_URL}).putIfNotExists(item.title, item).then((err, response) => {
+			new PouchDB('RSS_Content', {
+				db: redisdown,
+				url: process.env.REDIS_URL
+			}).putIfNotExists(item.title, item).then((err, response) => {
+				if (err) {
+					console.log(err);
+				}
+			}).catch(err => {
 				if (err) {
 					console.log(err);
 				}

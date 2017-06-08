@@ -62,6 +62,7 @@ function render() {
 						let item;
 
 						while (item = stream.read()) {
+							console.log('item');
 							new PouchDB('RSS_Content', {
 								db: redisdown,
 								url: process.env.REDIS_URL
@@ -74,8 +75,8 @@ function render() {
 						}
 					});
 				}
-				resolve('hi');
 			}
+			resolve('hi');
 		});
 	});
 }
