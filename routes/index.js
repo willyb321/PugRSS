@@ -6,7 +6,7 @@ const FeedParser = require('feedparser');
 const _ = require('underscore');
 const moment = require('moment');
 const he = require('he');
-
+const redisdown = require('redisdown');
 process.on('uncaughtException', err => {
 	console.log(err);
 });
@@ -19,7 +19,7 @@ PouchDB.plugin(require('pouchdb-upsert'));
 function render() {
 	return new Promise((resolve, reject) => {
 		let urls;
-		const feeds = new PouchDB('RSS_Feeds');
+		const feeds = new PouchDB('RSS_Feeds', {db: redisdown, url: process.env.REDIS_URL});
 		feeds.allDocs({include_docs: true}).then(docs => {
 			urls = docs;
 			if (urls) {
@@ -56,7 +56,7 @@ function render() {
 						let item;
 
 						while (item = stream.read()) {
-							new PouchDB('RSS_Content').putIfNotExists(item.title, item).then(response => {
+							new PouchDB('RSS_Content', {db: redisdown, url: process.env.REDIS_URL}).putIfNotExists(item.title, item).then(response => {
 							}).catch(err => {
 								if (err) {
 									console.log(err);
@@ -77,7 +77,7 @@ var decodeHtmlEntity = function(str) {
 };
 /* GET home page. */
 router.get('/', async (req, res, next) => {
-	const db = new PouchDB('RSS_Content');
+	const db = new PouchDB('RSS_Content', {db: redisdown, url: process.env.REDIS_URL});
 	await render();
 	db.allDocs({include_docs: true}).then(result => {
 		let pubdates = [];

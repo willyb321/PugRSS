@@ -19,6 +19,7 @@
     "pouchdb": "^6.2.0",
     "pouchdb-upsert": "^2.2.0",
     "pug": "~2.0.0-rc.2",
+    "redisdown": "^0.1.12",
     "request": "^2.81.0",
     "serve-favicon": "~2.4.3",
     "underscore": "^1.8.3"
