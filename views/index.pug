@@ -19,7 +19,7 @@ block content
 					a(href=val.doc.link target="_blank") View Story
 				input.is-primary.is-bold.button.spoilerbutton(type='button', value='Show Summary', onclick="this.value=this.value=='Show Summary'?'Hide Summary':'Show Summary';")
 				.spoiler
-					div= val.doc.description
+					div= val.doc.description.replace(/<[^>]+>/g, '')
 		hr
 	.scroll-to-top
 		a.button.is-primary(onclick="window.scrollTo(0, 0)")
