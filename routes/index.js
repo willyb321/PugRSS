@@ -4,7 +4,7 @@ const PouchDB = require('pouchdb');
 const request = require('request');
 const FeedParser = require('feedparser');
 const _ = require('underscore');
-
+const moment = require('moment');
 process.on('uncaughtException', err => {
 	console.log(err);
 });
@@ -73,7 +73,11 @@ router.get('/', async (req, res, next) => {
 	const db = new PouchDB('RSS_Content');
 	await render();
 	db.allDocs({include_docs: true}).then(result => {
-		res.render('index', {title: 'PugRSS', docs:  _.sortBy(result.rows, function(o) { return new Date(o.doc.pubdate); })});
+		let pubdates = [];
+		_.each(result.rows, (elem, index) => {
+			pubdates.push(moment(elem.doc.meta.pubdate).fromNow());
+		})
+		res.render('index', {title: 'PugRSS', docs:  _.sortBy(result.rows, function(o) { return new Date(o.doc.pubdate); }), dates: pubdates});
 		db.close();
 	});
 });

@@ -11,7 +11,8 @@ block content
 		.box
 			.container
 				h1.title= val.doc.title
-				h2.subtitle= 'From ' + val.doc.meta.title
+				- var pubdate = dates[ind]
+				h2.subtitle= 'From ' + val.doc.meta.title + ' (' + pubdate + ')'
 				a(href=val.doc.origlink target="_blank") View Story
 				input.is-primary.is-bold.button.spoilerbutton(type='button', value='Show Summary', onclick="this.value=this.value=='Show Summary'?'Hide Summary':'Show Summary';")
 				.spoiler
