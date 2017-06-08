@@ -7,10 +7,16 @@ const _ = require('underscore');
 const moment = require('moment');
 const he = require('he');
 const redisdown = require('redisdown');
+const ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn();
+const passport = require('passport');
 process.on('uncaughtException', err => {
 	console.log(err);
 });
-
+const env = {
+	AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID,
+	AUTH0_DOMAIN: process.env.AUTH0_DOMAIN,
+	AUTH0_CALLBACK_URL: process.env.AUTH0_CALLBACK_URL || 'http://localhost:3000/callback'
+};
 process.on('unhandledRejection', err => {
 	console.log(err);
 });
@@ -56,7 +62,10 @@ function render() {
 						let item;
 
 						while (item = stream.read()) {
-							new PouchDB('RSS_Content', {db: redisdown, url: process.env.REDIS_URL}).putIfNotExists(item.title, item).then(response => {
+							new PouchDB('RSS_Content', {
+								db: redisdown,
+								url: process.env.REDIS_URL
+							}).putIfNotExists(item.title, item).then(response => {
 							}).catch(err => {
 								if (err) {
 									console.log(err);
@@ -70,25 +79,39 @@ function render() {
 		});
 	});
 }
-var decodeHtmlEntity = function(str) {
-  return str.replace(/&#(\d+);/g, function(match, dec) {
-    return String.fromCharCode(dec);
-  });
-};
+
+router.get('/login',
+	function (req, res) {
+		res.render('login', {env: env});
+	});
+
+router.get('/logout', function (req, res) {
+	req.logout();
+	res.redirect('/');
+});
+
+router.get('/callback',
+	passport.authenticate('auth0', {failureRedirect: '/'}),
+	function (req, res) {
+		res.redirect(req.session.returnTo || '/');
+	});
+
 /* GET home page. */
-router.get('/', async (req, res, next) => {
+router.get('/', ensureLoggedIn, async (req, res, next) => {
 	const db = new PouchDB('RSS_Content', {db: redisdown, url: process.env.REDIS_URL});
 	await render();
 	db.allDocs({include_docs: true}).then(result => {
 		let pubdates = [];
-		result.rows =  _.sortBy(result.rows, o => { return new Date(o.doc.pubdate); })
+		result.rows = _.sortBy(result.rows, o => {
+			return new Date(o.doc.pubdate);
+		});
 		_.each(result.rows, (elem, index) => {
-			elem.doc.description = he.decode(elem.doc.description)
-			elem.doc.title = he.decode(elem.doc.title)
+			elem.doc.description = he.decode(elem.doc.description);
+			elem.doc.title = he.decode(elem.doc.title);
 			pubdates.push(moment(elem.doc.pubdate).fromNow());
-		})
+		});
 		result.rows = result.rows.reverse();
-		res.render('index', {title: 'PugRSS', docs:  result.rows, dates: pubdates.reverse()});
+		res.render('index', {title: 'PugRSS', docs: result.rows, dates: pubdates.reverse(), env: env });
 		db.close();
 	});
 });

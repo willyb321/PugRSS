@@ -5,9 +5,10 @@ const redisdown = require('redisdown');
 const db = new PouchDB('RSS_Feeds', {db: redisdown, url: process.env.REDIS_URL});
 const FeedParser = require('feedparser');
 const request = require('request');
+const ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn();
 PouchDB.plugin(require('pouchdb-upsert'));
 
-router.post('/', (req, res, next) => {
+router.post('/', ensureLoggedIn, (req, res, next) => {
 	const url = req.body.url;
 	console.log(url);
 	const feedreq = request(url);
