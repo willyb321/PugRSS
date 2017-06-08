@@ -13,10 +13,13 @@ block content
 				h1.title= val.doc.title
 				- var pubdate = dates[ind]
 				h2.subtitle= 'From ' + val.doc.meta.title + ' (' + pubdate + ')'
-				a(href=val.doc.origlink target="_blank") View Story
+				if val.doc.origlink
+					a(href=val.doc.origlink target="_blank") View Story
+				else
+					a(href=val.doc.link target="_blank") View Story
 				input.is-primary.is-bold.button.spoilerbutton(type='button', value='Show Summary', onclick="this.value=this.value=='Show Summary'?'Hide Summary':'Show Summary';")
 				.spoiler
-					div= val.doc.description.replace(/<[^>]+>/g, '')
+					div= val.doc.description
 		hr
 	.scroll-to-top
 		a.button.is-primary(onclick="window.scrollTo(0, 0)")

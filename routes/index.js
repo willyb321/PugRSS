@@ -5,6 +5,8 @@ const request = require('request');
 const FeedParser = require('feedparser');
 const _ = require('underscore');
 const moment = require('moment');
+const he = require('he');
+
 process.on('uncaughtException', err => {
 	console.log(err);
 });
@@ -68,16 +70,25 @@ function render() {
 		});
 	});
 }
+var decodeHtmlEntity = function(str) {
+  return str.replace(/&#(\d+);/g, function(match, dec) {
+    return String.fromCharCode(dec);
+  });
+};
 /* GET home page. */
 router.get('/', async (req, res, next) => {
 	const db = new PouchDB('RSS_Content');
 	await render();
 	db.allDocs({include_docs: true}).then(result => {
 		let pubdates = [];
+		result.rows =  _.sortBy(result.rows, o => { return new Date(o.doc.pubdate); })
 		_.each(result.rows, (elem, index) => {
-			pubdates.push(moment(elem.doc.meta.pubdate).fromNow());
+			elem.doc.description = he.decode(elem.doc.description)
+			elem.doc.title = he.decode(elem.doc.title)
+			pubdates.push(moment(elem.doc.pubdate).fromNow());
 		})
-		res.render('index', {title: 'PugRSS', docs:  _.sortBy(result.rows, function(o) { return new Date(o.doc.pubdate); }), dates: pubdates});
+		result.rows = result.rows.reverse();
+		res.render('index', {title: 'PugRSS', docs:  result.rows, dates: pubdates.reverse()});
 		db.close();
 	});
 });
