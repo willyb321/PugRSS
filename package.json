@@ -29,6 +29,7 @@
     "redisdown": "^0.1.12",
     "request": "^2.81.0",
     "serve-favicon": "~2.4.3",
-    "underscore": "^1.8.3"
+    "underscore": "^1.8.3",
+    "uuid": "^3.0.1"
   }
 }

@@ -81,18 +81,18 @@ function render() {
 }
 
 router.get('/login',
-	function (req, res) {
-		res.render('login', {env: env});
+	(req, res) => {
+		res.render('login', {env});
 	});
 
-router.get('/logout', function (req, res) {
+router.get('/logout', (req, res) => {
 	req.logout();
 	res.redirect('/');
 });
 
 router.get('/callback',
 	passport.authenticate('auth0', {failureRedirect: '/'}),
-	function (req, res) {
+	(req, res) => {
 		res.redirect(req.session.returnTo || '/');
 	});
 
@@ -101,7 +101,7 @@ router.get('/', ensureLoggedIn, async (req, res, next) => {
 	const db = new PouchDB('RSS_Content', {db: redisdown, url: process.env.REDIS_URL});
 	await render();
 	db.allDocs({include_docs: true}).then(result => {
-		let pubdates = [];
+		const pubdates = [];
 		result.rows = _.sortBy(result.rows, o => {
 			return new Date(o.doc.pubdate);
 		});
@@ -111,7 +111,7 @@ router.get('/', ensureLoggedIn, async (req, res, next) => {
 			pubdates.push(moment(elem.doc.pubdate).fromNow());
 		});
 		result.rows = result.rows.reverse();
-		res.render('index', {title: 'PugRSS', docs: result.rows, dates: pubdates.reverse(), env: env });
+		res.render('index', {title: 'PugRSS', docs: result.rows, dates: pubdates.reverse(), env});
 		db.close();
 	});
 });

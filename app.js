@@ -11,20 +11,23 @@ const Auth0Strategy = require('passport-auth0');
 const index = require('./routes/index');
 const addfeed = require('./routes/addfeed');
 const add = require('./routes/add');
+const remove = require('./routes/remove');
+const managefeed = require('./routes/managefeed');
 const user = require('./routes/user');
+const uuidV4 = require('uuid/v4');
 
 const app = express();
 
 // View engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
-let strategy = new Auth0Strategy({
-	domain:       process.env.AUTH0_DOMAIN,
-	clientID:     process.env.AUTH0_CLIENT_ID,
+const strategy = new Auth0Strategy({
+	domain: process.env.AUTH0_DOMAIN,
+	clientID: process.env.AUTH0_CLIENT_ID,
 	clientSecret: process.env.AUTH0_CLIENT_SECRET,
-	callbackURL:  process.env.AUTH0_CALLBACK_URL || 'http://localhost:3000/callback'
-}, function(accessToken, refreshToken, extraParams, profile, done) {
-	// accessToken is the token to call Auth0 API (not needed in the most cases)
+	callbackURL: process.env.AUTH0_CALLBACK_URL || 'http://localhost:3000/callback'
+}, (accessToken, refreshToken, extraParams, profile, done) => {
+	// AccessToken is the token to call Auth0 API (not needed in the most cases)
 	// extraParams.id_token has the JSON Web Token
 	// profile has all the information from the user
 	return done(null, profile);
@@ -33,16 +36,16 @@ let strategy = new Auth0Strategy({
 passport.use(strategy);
 
 // This can be used to keep a smaller payload
-passport.serializeUser(function(user, done) {
+passport.serializeUser((user, done) => {
 	done(null, user);
 });
 
-passport.deserializeUser(function(user, done) {
+passport.deserializeUser((user, done) => {
 	done(null, user);
 });
 app.use(session({
-	secret: 'shhhhhhhhh',
-	resave: true,
+	secret: uuidV4(),
+resave: true,
 	saveUninitialized: true
 }));
 app.use(passport.initialize());
@@ -62,11 +65,13 @@ app.use(sassMiddleware({
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
+app.use('/managefeed', managefeed);
 app.use('/logout', index);
 app.use('/login', index);
 app.use('/callback', index);
 app.use('/addfeed', addfeed);
 app.use('/add', add);
+app.use('/remove', remove);
 app.use('/user', user);
 // Catch 404 and forward to error handler
 app.use((req, res, next) => {

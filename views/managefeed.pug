@@ -1,0 +1,24 @@
+extends layout
+
+block content
+	section.hero.is-primary.is-bold
+		.hero-body
+			.container
+				h1.title= title
+				h2.subtitle Welcome to #{title}
+				a(href="/") Go back
+	.container
+		each val,ind in feeds
+			.box
+				span= val.doc.url
+				button.button(onclick="removeFeed(event)" id= val.doc._id) Remove Feed
+	script.
+		function removeFeed(event) {
+			$.ajax({
+				type: "POST",
+				url: '/remove',
+				data: {toremove: event.target.id}
+			}).then(data => {
+				console.log(data);
+			});
+		}
