@@ -7,7 +7,7 @@ block content
 				h1.title= title
 				h2.subtitle Welcome to #{title}
 				a.button(href="/addfeed") Add Feed
-				button.button(onclick="$.ajax({url: '/refresh', method: 'POST', data: {}}).then(() => window.location.reload())") Refresh
+				button.button(onclick="window.location.reload()") Refresh
 	each val,ind in docs
 		.box
 			.container

@@ -14,7 +14,6 @@ const add = require('./routes/add');
 const remove = require('./routes/remove');
 const managefeed = require('./routes/managefeed');
 const user = require('./routes/user');
-const refresh = require('./routes/refresh');
 const uuidV4 = require('uuid/v4');
 
 const app = express();
@@ -66,7 +65,6 @@ app.use(sassMiddleware({
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
-app.use('/refresh', refresh);
 app.use('/managefeed', managefeed);
 app.use('/logout', index);
 app.use('/login', index);

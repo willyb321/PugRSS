@@ -9,6 +9,7 @@ const he = require('he');
 const redisdown = require('redisdown');
 const ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn();
 const passport = require('passport');
+const Promise = require('bluebird')
 process.on('uncaughtException', err => {
 	console.log(err);
 });
@@ -22,68 +23,50 @@ process.on('unhandledRejection', err => {
 });
 PouchDB.plugin(require('pouchdb-upsert'));
 
-function render() {
+const fetch = (url) => {
 	return new Promise((resolve, reject) => {
-		let urls;
-		const feeds = new PouchDB('RSS_Feeds', {db: redisdown, url: process.env.REDIS_URL});
-		feeds.allDocs({include_docs: true}).then(docs => {
-			urls = docs;
-			if (urls) {
-				for (const i in urls.rows) {
-					console.log('we got them');
-					const feedreq = request(urls.rows[i].doc.url);
-					const feedparser = new FeedParser();
-					feedparser.on('meta', meta => {
-						console.log('===== %s =====', meta.title);
-					});
-					feedreq.on('error', error => {
-						console.error(error);
-					});
+		if (!url) { return reject(new Error(`Bad URL (url: ${url}`)); }
 
-					feedreq.on('response', function (res) {
-						const stream = this; // `this` is `req`, which is a stream
-						// console.log(stream)
-						if (res.statusCode !== 200) {
-							this.emit('error', new Error('Bad status code'));
-						} else {
-							console.log('piping: ');
-							stream.pipe(feedparser);
-						}
-					});
+		const
+			feedparser = new FeedParser(),
+			items = [];
 
-					feedparser.on('error', error => {
-						console.error(error);
-					});
+		feedparser.on('error', (e) => {
+			return reject(e);
+		}).on('readable', () => {
+			// This is where the action is!
+			var item;
 
-					feedparser.on('readable', function () {
-						// This is where the action is!
-						const stream = this; // `this` is `feedparser`, which is a stream
-						const meta = stream.meta; // **NOTE** the "meta" is always available in the context of the feedparser instance
-						let item;
-
-						while (item = stream.read()) {
-							console.log('item');
-							new PouchDB('RSS_Content', {
-								db: redisdown,
-								url: process.env.REDIS_URL
-							}).putIfNotExists(item.title, item).then(response => {
-							}).catch(err => {
-								if (err) {
-									console.log(err);
-								}
-							});
-						}
-					});
-				}
+			while (item = feedparser.read()) {
+				items.push(item)
 			}
-			resolve('hi');
+		}).on('end', () => {
+			resolve({
+				meta: feedparser.meta,
+				records: items
+			});
+		});
+
+		request({
+			method: 'GET',
+			url: url
+		}, (e, res, body) => {
+			if (e) {
+				return reject(e);
+			}
+
+			if (res.statusCode != 200) {
+				return reject(new Error(`Bad status code (status: ${res.statusCode}, url: ${url})`));
+			}
+
+			feedparser.end(body);
 		});
 	});
-}
+};
 
 router.get('/login',
 	(req, res) => {
-		res.render('login', {env});
+		res.render('login', { env });
 	});
 
 router.get('/logout', (req, res) => {
@@ -92,29 +75,48 @@ router.get('/logout', (req, res) => {
 });
 
 router.get('/callback',
-	passport.authenticate('auth0', {failureRedirect: '/'}),
+	passport.authenticate('auth0', { failureRedirect: '/' }),
 	(req, res) => {
 		res.redirect(req.session.returnTo || '/');
 	});
 
 /* GET home page. */
 router.get('/', ensureLoggedIn, async (req, res, next) => {
-	const db = new PouchDB('RSS_Content', {db: redisdown, url: process.env.REDIS_URL});
-	await render();
-	db.allDocs({include_docs: true}).then(result => {
-		const pubdates = [];
-		result.rows = _.sortBy(result.rows, o => {
-			return new Date(o.doc.pubdate);
-		});
-		_.each(result.rows, (elem, index) => {
-			elem.doc.description = he.decode(elem.doc.description);
-			elem.doc.title = he.decode(elem.doc.title);
-			pubdates.push(moment(elem.doc.pubdate).fromNow());
-		});
-		result.rows = result.rows.reverse();
-		res.render('index', {title: 'PugRSS', docs: result.rows, dates: pubdates.reverse(), env});
-		db.close();
-	});
+	const db = new PouchDB('RSS_Content', { db: redisdown, url: process.env.REDIS_URL });
+	const feeds = new PouchDB('RSS_Feeds', { db: redisdown, url: process.env.REDIS_URL });
+	feeds.allDocs({ include_docs: true }).then(docs => {
+		let feeds = [];
+		_.each(docs.rows, elem => {
+			feeds.push(elem.doc.url);
+		})
+		Promise.map(feeds, (url) => fetch(url), { concurrency: 4 }) // note that concurrency limit
+			.then((feeds) => {
+				_.each(feeds.records, (elem, ind) => {
+					console.log(typeof elem);
+					console.log(elem)
+					db.putIfNotExists(elem.title, elem).then(response => {
+						console.log(response.updated)
+					}).catch(err => {
+						if (err) {
+							console.log(err);
+						}
+					});
+				});
+				let pubdates = [];
+				db.allDocs({ include_docs: true }).then(docs => {
+					docs.rows = _.sortBy(docs.rows, o => {
+						return new Date(o.doc.pubdate);
+					});
+					_.each(docs.rows, (elem, index) => {
+						if (elem.doc.description) { elem.doc.description = he.decode(elem.doc.description) }
+						if (elem.doc.title) { elem.doc.title = he.decode(elem.doc.title) }
+						pubdates.push(moment(elem.doc.pubdate).fromNow());
+					});
+					res.render('index', { title: 'PugRSS', docs: docs.rows.reverse(), dates: pubdates.reverse(), env });
+				})
+			});
+	})
+
 });
 
 module.exports = router;
