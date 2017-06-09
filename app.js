@@ -15,6 +15,7 @@ const remove = require('./routes/remove');
 const managefeed = require('./routes/managefeed');
 const user = require('./routes/user');
 const uuidV4 = require('uuid/v4');
+const RedisStore = require('connect-redis')(session);
 
 const app = express();
 
@@ -44,6 +45,7 @@ passport.deserializeUser((user, done) => {
 	done(null, user);
 });
 app.use(session({
+	store: new RedisStore({url: process.env.REDIS_URL}),
 	secret: uuidV4(),
 	resave: true,
 	saveUninitialized: true

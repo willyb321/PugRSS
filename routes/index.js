@@ -57,7 +57,7 @@ const fetch = url => {
 				return reject(e);
 			}
 
-			if (res.statusCode != 200) {
+			if (res.statusCode !== 200) {
 				return reject(new Error(`Bad status code (status: ${res.statusCode}, url: ${url})`));
 			}
 
@@ -93,18 +93,18 @@ router.get('/', ensureLoggedIn, async (req, res, next) => {
 		});
 		Promise.map(feedsURL, url => fetch(url), { concurrency: 4 }) // Note that concurrency limit
 			.then(feedsContent => {
-				console.log(feedsContent)
-				_.each(feedsContent, (elem, ind) => {
-					elem.records._id = elem.records.title
-				});
+				console.log('doing things');
 				_.each(feedsContent, elem => {
-					db.bulkDocs(elem.records).then(bulkRes => {
-						console.log(bulkRes);
-					}).catch(bulkErr => {
-						console.log(bulkErr);
-					})
-				})
-				console.log(typeof feedsContent)
+					_.each(elem.records, records => {
+						records._id = records.title;
+						console.log(records._id);
+						db.putIfNotExists(records._id, records).then(bulkRes => {
+							console.log('Updated doc: ' + bulkRes.updated);
+						}).catch(bulkErr => {
+							console.log(bulkErr);
+						});
+					});
+				});
 				const pubdates = [];
 				db.allDocs({ include_docs: true }).then(docs => {
 					docs.rows = _.sortBy(docs.rows, o => {
