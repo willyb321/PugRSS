@@ -14,11 +14,11 @@ router.post('/', ensureLoggedIn, (req, res, next) => {
 	db.get(toRemove).then(doc => {
 		return db.remove(doc);
 	}).then(result => {
-		console.log(result)
-		res.json(result)
+		console.log(result);
+		res.json(result);
 	}).catch(err => {
 		console.log(err);
-		res.json(err)
+		res.json(err);
 	});
 });
 

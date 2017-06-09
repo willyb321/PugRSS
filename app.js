@@ -45,7 +45,7 @@ passport.deserializeUser((user, done) => {
 });
 app.use(session({
 	secret: uuidV4(),
-resave: true,
+	resave: true,
 	saveUninitialized: true
 }));
 app.use(passport.initialize());
