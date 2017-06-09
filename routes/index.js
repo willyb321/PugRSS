@@ -85,13 +85,13 @@ router.get('/', ensureLoggedIn, async (req, res, next) => {
 	const db = new PouchDB('RSS_Content', { db: redisdown, url: process.env.REDIS_URL });
 	const feeds = new PouchDB('RSS_Feeds', { db: redisdown, url: process.env.REDIS_URL });
 	feeds.allDocs({ include_docs: true }).then(docs => {
-		let feeds = [];
+		let feedsURL = [];
 		_.each(docs.rows, elem => {
-			feeds.push(elem.doc.url);
+			feedsURL.push(elem.doc.url);
 		})
-		Promise.map(feeds, (url) => fetch(url), { concurrency: 4 }) // note that concurrency limit
-			.then((feeds) => {
-				_.each(feeds.records, (elem, ind) => {
+		Promise.map(feedsURL, (url) => fetch(url), { concurrency: 4 }) // note that concurrency limit
+			.then((feedsContent) => {
+				_.each(feedsContent.records, (elem, ind) => {
 					console.log(typeof elem);
 					console.log(elem)
 					db.putIfNotExists(elem.title, elem).then(response => {
