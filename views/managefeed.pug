@@ -7,11 +7,20 @@ block content
 				h1.title= title
 				h2.subtitle Welcome to #{title}
 				a(href="/") Go back
+
 	.container
+		h1.title Add Feeds
+		.box
+			form.form(action="/add" method="post" onsubmit="console.log(event)")
+				input.input(type="text" name="url" placeholder='RSS URL')
+				button.button.is-primary(type='submit') Submit
+	hr
+	.container
+		h1.title Remove Feeds
 		each val,ind in feeds
 			.box
 				span= val.doc.url
-				button.button(onclick="removeFeed(event)" id= val.doc._id) Remove Feed
+				button.button(style="float: right" onclick="removeFeed(event)" id= val.doc._id) Remove Feed
 	script.
 		function removeFeed(event) {
 			$.ajax({
@@ -20,5 +29,6 @@ block content
 				data: {toremove: event.target.id}
 			}).then(data => {
 				console.log(data);
+				window.location.reload();
 			});
 		}

@@ -57,8 +57,9 @@ router.post('/', ensureLoggedIn, (req, res, next) => {
 				}
 			});
 		}
-	});
-	res.redirect('/');
+	}).on('end', (err => {
+		res.redirect('/managefeed');
+	}))
 });
 
 router.get('/', (req, res, next) => {
