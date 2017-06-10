@@ -45,7 +45,7 @@ passport.deserializeUser((user, done) => {
 	done(null, user);
 });
 app.use(session({
-	store: new RedisStore({url: process.env.REDIS_URL}),
+	store: new RedisStore({url: process.env.REDIS_URL || 'redis://redis'}),
 	secret: uuidV4(),
 	resave: true,
 	saveUninitialized: true

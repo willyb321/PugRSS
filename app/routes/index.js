@@ -84,8 +84,8 @@ router.get('/callback',
 
 /* GET home page. */
 router.get('/', ensureLoggedIn, async (req, res, next) => {
-	const db = new PouchDB('RSS_Content', { db: redisdown, url: process.env.REDIS_URL });
-	const feeds = new PouchDB('RSS_Feeds', { db: redisdown, url: process.env.REDIS_URL });
+	const db = new PouchDB('RSS_Content', { db: redisdown, url: process.env.REDIS_URL || 'redis://redis' });
+	const feeds = new PouchDB('RSS_Feeds', { db: redisdown, url: process.env.REDIS_URL || 'redis://redis' });
 	feeds.allDocs({ include_docs: true }).then(docs => {
 		const feedsURL = [];
 		_.each(docs.rows, elem => {
@@ -126,8 +126,8 @@ router.get('/', ensureLoggedIn, async (req, res, next) => {
 });
 
 router.post('/', ensureLoggedIn, async (req, res, next) => {
-	const db = new PouchDB('RSS_Content', { db: redisdown, url: process.env.REDIS_URL });
-	const feeds = new PouchDB('RSS_Feeds', { db: redisdown, url: process.env.REDIS_URL });
+	const db = new PouchDB('RSS_Content', { db: redisdown, url: process.env.REDIS_URL || 'redis://redis' });
+	const feeds = new PouchDB('RSS_Feeds', { db: redisdown, url: process.env.REDIS_URL || 'redis://redis' });
 	feeds.allDocs({ include_docs: true }).then(docs => {
 		const feedsURL = [];
 		_.each(docs.rows, elem => {

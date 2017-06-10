@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const PouchDB = require('pouchdb');
 const redisdown = require('redisdown');
-const db = new PouchDB('RSS_Feeds', {db: redisdown, url: process.env.REDIS_URL});
+const db = new PouchDB('RSS_Feeds', {db: redisdown, url: process.env.REDIS_URL || 'redis://redis'});
 const FeedParser = require('feedparser');
 const request = require('request');
 const ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn();
@@ -46,7 +46,7 @@ router.post('/', ensureLoggedIn, (req, res, next) => {
 		while (item = stream.read()) {
 			new PouchDB('RSS_Content', {
 				db: redisdown,
-				url: process.env.REDIS_URL
+				url: process.env.REDIS_URL || 'redis://redis'
 			}).putIfNotExists(item.title, item).then((err, response) => {
 				if (err) {
 					console.log(err);
