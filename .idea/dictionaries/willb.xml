@@ -3,6 +3,7 @@
     <words>
       <w>addfeed</w>
       <w>feedreq</w>
+      <w>managefeed</w>
       <w>pubdates</w>
       <w>redisdown</w>
     </words>
