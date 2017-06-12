@@ -24,10 +24,10 @@ router.post('/', ensureLoggedIn, (req, res, next) => {
 		if (res.statusCode !== 200) {
 			this.emit('error', new Error('Bad status code'));
 		} else {
-			db.putIfNotExists(url, {url}).then((err, response) => {
-				if (err) {
-					console.log(err);
-				}
+			db.putIfNotExists(url, {url}).then(response => {
+				console.log(response);
+			}).catch(err => {
+				console.log(err);
 			});
 			stream.pipe(feedparser);
 		}
